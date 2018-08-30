@@ -1,6 +1,9 @@
 # Jinotify
 The JNI implements of Linux sys/inotify.h
 
+## Environment
+Need Linux 2.6.14 + inotify.h
+
 ## compile so
 
 1 cd src/main/native
