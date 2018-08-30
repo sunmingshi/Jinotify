@@ -6,7 +6,7 @@ public class Main {
 
     private static NativeInotify nativeInotify;
 
-    public static void main(String[] args) {
+    public static void main(String[] args) throws Exception {
 
         System.loadLibrary("NativeInotify");
 
