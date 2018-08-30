@@ -4,19 +4,19 @@ The JNI implements of Linux sys/inotify.h
 ## Environment
 Need Linux 2.6.14 + inotify.h
 
-## compile so
+## Compile so
 
 1 cd src/main/native
 
 2 gcc -I $JAVA_HOME/include -I $JAVA_HOME/include/linux com_megacreep_jinotify_NativeInotify.c -fPIC -shared -o libNativeInotify.so
 
-## compile java
+## Compile java
 
-1 cd /path/to/*.java
+1 cd /path/to/java
 
 2 javac *
 
-## run
+## Run
 
 1 cd src/main/java
 
