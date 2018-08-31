@@ -4,20 +4,38 @@ The JNI implements of Linux sys/inotify.h
 ## Environment
 Need Linux 2.6.14 + inotify.h
 
+inotify是Linux核心子系统之一，做为文件系统的附加功能，它可监控文件系统并将异动通知应用程序。更新目录查看、重新加载配置文件、追踪变更、备份、同步甚至上传等许多自动化作业流程，都可因而受惠。
+
 ## Compile so
 
 1 cd src/main/native
 
 2 gcc -I $JAVA_HOME/include -I $JAVA_HOME/include/linux com_megacreep_jinotify_NativeInotify.c -fPIC -shared -o libNativeInotify.so
 
-## Compile java
+## 内存占用
 
-1 cd /path/to/java
+1 native代码在JVM线程中被调用，所需内存由JVM堆内存分配，在代码执行结束后，由JVM负责回收
 
-2 javac *
 
-## Run
+```
+## Example
 
-1 cd src/main/java
+```java
 
-2 java -Djava.library.path=/path/to/libNativeInotify.so com.megacreep.jinotify.Main /path/to/watch/dir
+public class Demo {
+
+    public static void main(String...args) {
+        Inotify inotify = new Inotify();
+        int fd = inotify.init();// blocked
+        int wd = inotify.addWatch(fd,"/path/to/watch/dir",Mask.IN_ACCESS);
+        List<InotifyEvent> events = inotify.takeEvent(fd,wd);//not return until some events happened
+        for(InotifyEvent event : events) {
+            //do something
+            System.out.println(event);
+        }
+        int code = inotify.removeWatch(fd,wd);
+    }
+}
+
+```
+
