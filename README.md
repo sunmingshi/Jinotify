@@ -17,7 +17,6 @@ inotify是Linux核心子系统之一，做为文件系统的附加功能，它�
 1 native代码在JVM线程中被调用，所需内存由JVM堆内存分配，在代码执行结束后，由JVM负责回收
 
 
-```
 ## Example
 
 ```java
