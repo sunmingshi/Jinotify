@@ -25,14 +25,14 @@ public class Demo {
 
     public static void main(String...args) {
         Inotify inotify = new Inotify();
-        int fd = inotify.init();
-        int wd = inotify.addWatch(fd,"/path/to/watch/dir",Mask.IN_ACCESS);
-        List<InotifyEvent> events = inotify.takeEvent(fd,wd);// blocked
+        inotify.init();
+        inotify.addWatch("/path/to/watch/dir",Mask.IN_ACCESS);
+        List<InotifyEvent> events = inotify.takeEvent();// blocked
         for(InotifyEvent event : events) {
             //do something
             System.out.println(event);
         }
-        int code = inotify.removeWatch(fd,wd);
+        int code = inotify.removeWatch();
     }
 }
 

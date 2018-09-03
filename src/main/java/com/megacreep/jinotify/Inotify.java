@@ -8,7 +8,18 @@ import java.util.List;
 
 public class Inotify {
 
+    /**
+     * inotify 文件描述符
+     */
+    private int fd;
+    /**
+     * 监视描述符
+     */
+    private int wd;
+
     private NativeInotify nativeObj;
+
+    private int status = -1;
 
     /**
      * 构造方法会把jar中的so文件提取出来，并在保存在当前目录下加载
@@ -38,62 +49,54 @@ public class Inotify {
             // 加载so
             System.load(tmp.getAbsolutePath());
             // 注册删除hook
-            Runtime.getRuntime().addShutdownHook(new Thread(tmp::delete));
-            Runtime.getRuntime().addShutdownHook(new Thread(jnilibdir::delete));
+            Thread clear = new Thread(() -> {
+                tmp.delete();
+                jnilibdir.delete();
+            });
+            Runtime.getRuntime().addShutdownHook(clear);
             nativeObj = new NativeInotify();
+            fd = nativeObj.init();
+            status = 0;
         }
-    }
-
-    /**
-     * 初始化并获得一个 inotify 实例
-     *
-     * @return inotify的fd
-     */
-    public int init() {
-        return nativeObj.init();
-    }
-
-    /**
-     * 初始化并获得一个 inotify 实例
-     * 与 init() 的区别是，可选为非阻塞方式，具体参考inotify的init1
-     *
-     * @return inotify的fd
-     */
-    public int init1(int flag) {
-        return nativeObj.init1(flag);
     }
 
     /**
      * 监视path目录
      *
-     * @param fd   inotify实例的fd
      * @param path 要监视的目录
      * @param mask 事件掩码，{@link Mask}
      * @return 监视fd
      */
-    public int addWatch(int fd, String path, int mask) {
-        return nativeObj.addWatch(fd, path, mask);
+    public synchronized int addWatch(String path, int mask) {
+        if (status != 0) {
+            throw new IllegalStateException("Inotify not ready");
+        }
+        wd = nativeObj.addWatch(fd, path, mask);
+        status = 1;
+        return wd;
     }
 
     /**
      * 取消监视
-     *
-     * @param fd inotify实例的fd
-     * @param wd 监视fd
-     * @return 取消结果
      */
-    public int removeWatch(int fd, int wd) {
-        return nativeObj.removeWatch(fd, wd);
+    public synchronized int removeWatch() {
+        if (status != 1) {
+            throw new IllegalStateException("Can not remove watch before addWatch");
+        }
+        int code = nativeObj.removeWatch(fd, wd);
+        status = 0;
+        return code;
     }
 
     /**
      * 这是一个阻塞方法，当事件发生后返回，可通过循环或递归调用来完成对一个目录的监视
      *
-     * @param fd inotify实例的fd
-     * @param wd 监视fd
      * @return 事件列表
      */
-    public List<InotifyEvent> takeEvent(int fd, int wd) {
+    public synchronized List<InotifyEvent> takeEvent() {
+        if (status != 1) {
+            throw new IllegalStateException("Can not take watch before addWatch");
+        }
         return nativeObj.takeEvent(fd, wd);
     }
 }
