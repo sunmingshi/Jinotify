@@ -58,7 +58,7 @@ public class Inotify {
 
     /**
      * 这是一个阻塞方法，当事件发生后返回，可通过循环或递归调用来完成对一个目录的监视
-     *
+     * TODO 使用队列，避免漏掉事件
      * @return 事件列表
      */
     public synchronized List<InotifyEvent> takeEvent() {
